@@ -1,4 +1,5 @@
 import { exploreFilesAsync, MAX_WORKER_COUNT } from "./exploreFilesAsync.ts";
+import { md5 } from "./md5.ts";
 
 const sourcesIterator = exploreFilesAsync({
   rootDir: "C:\\Git\\App4Sales-Backend",
@@ -17,9 +18,14 @@ for await (const file of sourcesIterator) {
   console.log(`Backing up ${path}...`);
 }
 
-await Deno.writeTextFile(
-  "./a4s-bak.json",
-  JSON.stringify(Object.fromEntries(baks), null, 2),
-);
+const toWrite = JSON.stringify(Object.fromEntries(baks), null, 2);
+
+await Promise.all([
+  Deno.writeTextFile(
+    "./a4s-bak.json",
+    toWrite,
+  ),
+  Deno.writeTextFile(md5(toWrite) + ".hashed.json", toWrite),
+]);
 
 console.log("Backup complete: a4s-bak.json created.");
